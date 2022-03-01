@@ -4,12 +4,15 @@ public class Persona {
 	private String nombre;
 	private String apellido;
 	private long identificador;
+	private String password;
+	private String nombreUsuario;
 	
-	public Persona(String nombre, String apellido, long identificador) {
-		super();
+	public Persona(String nombre, String apellido, long identificador, String nombreUsuario, String password) {
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.identificador = identificador;
+		this.nombreUsuario = nombreUsuario;
+		this.password = password;
 	}
 
 	public String getNombre() {
@@ -34,5 +37,21 @@ public class Persona {
 
 	public void setIdentificador(long identificador) {
 		this.identificador = identificador;
+	}
+	
+	public String getNombreUsuario() {
+		return nombreUsuario;
+	}
+	
+	public void setNombreUsuario(String nombreUsuario) {
+		this.nombreUsuario = nombreUsuario;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 }
