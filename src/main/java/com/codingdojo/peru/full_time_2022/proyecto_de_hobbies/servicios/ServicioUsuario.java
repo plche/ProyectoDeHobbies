@@ -2,6 +2,7 @@ package com.codingdojo.peru.full_time_2022.proyecto_de_hobbies.servicios;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.codingdojo.peru.full_time_2022.proyecto_de_hobbies.modelos.Usuario;
@@ -10,11 +11,13 @@ import com.codingdojo.peru.full_time_2022.proyecto_de_hobbies.repositorios.Repos
 //La siguiente anotación indica que estamos creando una clase que representa un servicio (en SQL - bases de datos relacionales).
 @Service
 public class ServicioUsuario {
-	private final RepositorioUsuario repositorioUsuario;
+	@Autowired
+	private RepositorioUsuario repositorioUsuario;
+//	private final RepositorioUsuario repositorioUsuario;
 
-	public ServicioUsuario(RepositorioUsuario repositorio) {
-		this.repositorioUsuario = repositorio;
-	}
+//	public ServicioUsuario(RepositorioUsuario repositorio) {
+//		this.repositorioUsuario = repositorio;
+//	}
 	
 	public List<Usuario> selectAllFromUsuarios() {
 		return repositorioUsuario.findAll();
@@ -34,10 +37,20 @@ public class ServicioUsuario {
 		else return usuarioEncontrado.get(0);
 	}
 
+	public Usuario selectFromUsuariosWhereNombreUsuario( String nombreUsuario) {
+		List<Usuario> usuarioEncontrado = repositorioUsuario.findByNombreUsuario(nombreUsuario);
+		if (usuarioEncontrado.isEmpty()) return null;
+		else return usuarioEncontrado.get(0);
+	}
+
 	public void updateUsuario(Usuario editarUsuario) {
 //		repositorioUsuario.actualizarUsuario(editarUsuario.getNombre(), editarUsuario.getApellido(), editarUsuario.getPassword(),
 //				editarUsuario.getIdentificador(), editarUsuario.getNombreUsuario());
 		repositorioUsuario.actualizarUsuarioOpcion2(editarUsuario.getNombre(), editarUsuario.getApellido(), editarUsuario.getPassword(),
 				editarUsuario.getIdentificador(), editarUsuario.getNombreUsuario());
+	}
+
+	public List<Object[]> selectFromUsuariosHobbies() {
+		return repositorioUsuario.seleccionarUsuariosConHobbies();
 	}
 }

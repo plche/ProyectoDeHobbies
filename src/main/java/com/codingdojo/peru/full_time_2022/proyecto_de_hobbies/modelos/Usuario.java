@@ -38,7 +38,7 @@ public class Usuario {
 	private long identificador;
 	
 	@NotNull
-	@Size(min=4, max=30, message = "El password debe de tener entre 4 y 30 caracteres")
+	@Size(min=4, max=60, message = "El password debe de tener entre 4 y 60 caracteres")
 	private String password;
 
 	// La anotación @OneToMany, permite crear una relación 1 a n. mappedBy, indica el campo que relaciona en Hobby.

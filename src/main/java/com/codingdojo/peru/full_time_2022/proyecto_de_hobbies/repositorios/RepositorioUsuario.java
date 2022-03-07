@@ -29,6 +29,8 @@ public interface RepositorioUsuario extends CrudRepository<Usuario, Long>{
 	
 	List<Usuario> findByNombreUsuarioAndPassword(String nombreUsuario, String password);
 
+	List<Usuario> findByNombreUsuario(String nombreUsuario);
+
 	@Transactional
 	@Modifying
 	@Query(value = "UPDATE usuarios SET nombre = ?1, apellido = ?2, password = ?3, identificador = ?4 " +
@@ -36,9 +38,14 @@ public interface RepositorioUsuario extends CrudRepository<Usuario, Long>{
 	void actualizarUsuario(String nombre, String apellido, String password, Long identificador, String nombreUsuario);
 
 	@Transactional
+	// Queries that require a `@Modifying` annotation include INSERT, UPDATE, DELETE, and DDL statements.
 	@Modifying
 	@Query(value = "UPDATE usuarios SET nombre = :nombre, apellido = :apellido, password = :password, identificador = :identificador " +
 			"WHERE nombre_usuario = :nombreUsuario", nativeQuery = true)
 	void actualizarUsuarioOpcion2(@Param("nombre") String nombre, @Param("apellido") String apellido, @Param("password") String password,
 								  @Param("identificador") Long identificador, @Param("nombreUsuario") String nombreUsuario);
+
+	@Query(value = "SELECT u.nombre_usuario, u.nombre, apellido, identificador, id, h.nombre AS 'hobby_nombre' " +
+					"FROM usuarios u, hobbies h WHERE u.nombre_usuario = h.nombre_usuario", nativeQuery = true)
+	List<Object[]> seleccionarUsuariosConHobbies();
 }

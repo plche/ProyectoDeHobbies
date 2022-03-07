@@ -5,6 +5,8 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,12 +24,15 @@ import com.codingdojo.peru.full_time_2022.proyecto_de_hobbies.servicios.Servicio
 @Controller
 @RequestMapping("/usuarios")
 public class ControladorUsuario {
-	
-	private final ServicioUsuario servicioUsuario;
 
-	public ControladorUsuario(ServicioUsuario servicio) {
-		this.servicioUsuario = servicio;
-	}
+	@Autowired
+	private ServicioUsuario servicioUsuario;
+	
+//	private final ServicioUsuario servicioUsuario;
+//
+//	public ControladorUsuario(ServicioUsuario servicio) {
+//		this.servicioUsuario = servicio;
+//	}
 	
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String despliegaUsuarios(Model model, HttpSession session) {
@@ -35,12 +40,28 @@ public class ControladorUsuario {
 			List<Usuario> listaUsuarios = servicioUsuario.selectAllFromUsuarios();
 			model.addAttribute("listaUsuarios", listaUsuarios);
 
+			/*
 			for (int i = 0; i < listaUsuarios.size(); i++) {
 				System.out.println(listaUsuarios.get(i).getNombre() + " " + listaUsuarios.get(i).getApellido());
 				for (int j = 0; j < listaUsuarios.get(i).getListaHobbies().size(); j++) {
 					System.out.println(" - " + listaUsuarios.get(i).getListaHobbies().get(j).getNombre());
 				}
 			}
+			*/
+
+			// Haciendo uso del query que regresa una lista de tipo List<Object[]>
+			List<Object[]> renglones = servicioUsuario.selectFromUsuariosHobbies();
+			for (int i = 0; i < renglones.size(); i++) {
+				System.out.println("Renglon #" + (i + 1));
+//				Object[] renglon = renglones.get(i);
+//				for (int j = 0; j < renglon.length; j++) {
+//					System.out.print(renglon[j] + " - ");
+				for (int j = 0; j < renglones.get(i).length; j++) {
+					System.out.print(renglones.get(i)[j] + " - ");
+				}
+				System.out.print("\n");
+			}
+
 			return "usuarios.jsp";
 		} else return "redirect:/usuarios/login";
 	}
@@ -58,6 +79,9 @@ public class ControladorUsuario {
 			// no se redirecciona, a pesar de que se trata de un POST, tenemos que enviar nuevamente el formulario para que se muestre el error de la validación
 			return "registro.jsp";
 		} else {
+			String hash = BCrypt.hashpw(nuevoUsuario.getPassword(), BCrypt.gensalt());
+			System.out.println(hash);
+			nuevoUsuario.setPassword(hash);
 			servicioUsuario.insertIntoUsuarios(nuevoUsuario);
 			return "redirect:/usuarios";
 		}
@@ -73,7 +97,7 @@ public class ControladorUsuario {
 	public String login(@RequestParam(value = "nombreUsuario") String nombreUsuario,
 						@RequestParam(value = "password") String password,
 						HttpSession session, RedirectAttributes flash) {
-		Usuario usuarioEncontrado = servicioUsuario.selectFromUsuariosWhereNombreUsuarioAndPassword(nombreUsuario, password);
+		Usuario usuarioEncontrado = servicioUsuario.selectFromUsuariosWhereNombreUsuario(nombreUsuario);
 		if (usuarioEncontrado == null) {
 			if (nombreUsuario.equals("")) {
 				flash.addFlashAttribute("errorNombreUsuario", "Por favor proporciona tu nombre de usuario.");
@@ -84,15 +108,18 @@ public class ControladorUsuario {
 			}
 			
 			flash.addFlashAttribute("loginError", "Credenciales incorrectas.");
-			
 			return "redirect:/usuarios/login";
-		}
-		else {
-			session.setAttribute("nombre", usuarioEncontrado.getNombre());
-			session.setAttribute("apellido", usuarioEncontrado.getApellido());
-			session.setAttribute("identificador", usuarioEncontrado.getIdentificador());
-			session.setAttribute("nombreUsuario", usuarioEncontrado.getNombreUsuario());
-			return "redirect:/usuarios";
+		} else {
+			if (BCrypt.checkpw(password, usuarioEncontrado.getPassword())) {
+				session.setAttribute("nombre", usuarioEncontrado.getNombre());
+				session.setAttribute("apellido", usuarioEncontrado.getApellido());
+				session.setAttribute("identificador", usuarioEncontrado.getIdentificador());
+				session.setAttribute("nombreUsuario", usuarioEncontrado.getNombreUsuario());
+				return "redirect:/usuarios";
+			} else {
+				flash.addFlashAttribute("loginError", "Credenciales incorrectas.");
+				return "redirect:/usuarios/login";
+			}
 		}
 	}
 	
