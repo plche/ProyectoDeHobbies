@@ -34,12 +34,19 @@ public class ControladorUsuario {
 		if (session.getAttribute("nombre") != null) {
 			List<Usuario> listaUsuarios = servicioUsuario.selectAllFromUsuarios();
 			model.addAttribute("listaUsuarios", listaUsuarios);
+
+			for (int i = 0; i < listaUsuarios.size(); i++) {
+				System.out.println(listaUsuarios.get(i).getNombre() + " " + listaUsuarios.get(i).getApellido());
+				for (int j = 0; j < listaUsuarios.get(i).getListaHobbies().size(); j++) {
+					System.out.println(" - " + listaUsuarios.get(i).getListaHobbies().get(j).getNombre());
+				}
+			}
 			return "usuarios.jsp";
 		} else return "redirect:/usuarios/login";
 	}
 	
 	@RequestMapping(value = "/registro", method = RequestMethod.GET)
-	// Agregamos la anotación @ModelAttribute para poder usar la etiqueta jstl form:form en el JSP
+	// Agregamos la anotación @ModelAttribute para poder usar la etiqueta jstl form:form en el JSP, si no produce un error.
 	public String despliegaRegistro(@ModelAttribute("usuario") Usuario nuevoUsuario) {
 		return "registro.jsp";
 	}
@@ -47,22 +54,18 @@ public class ControladorUsuario {
 	@RequestMapping(value = "/registrar", method = RequestMethod.POST)
 	// no olvidar la anotación de @Valid, sino arroja error al intentar validar
 	public String registrarUsuario(@Valid @ModelAttribute("usuario") Usuario nuevoUsuario, BindingResult result) {
-		
 		if (result.hasErrors()) {
 			// no se redirecciona, a pesar de que se trata de un POST, tenemos que enviar nuevamente el formulario para que se muestre el error de la validación
 			return "registro.jsp";
 		} else {
 			servicioUsuario.insertIntoUsuarios(nuevoUsuario);
-			
 			return "redirect:/usuarios";
 		}
 	}
 	
 	@RequestMapping(value = "/eliminar/{nombreUsuario}", method = RequestMethod.DELETE)
 	public String eliminarUsuario(@PathVariable("nombreUsuario") String nombreUsuario) {
-		
 		servicioUsuario.deleteFromUsuarios(nombreUsuario);
-		
 		return "redirect:/usuarios";
 	}
 	
@@ -70,7 +73,6 @@ public class ControladorUsuario {
 	public String login(@RequestParam(value = "nombreUsuario") String nombreUsuario,
 						@RequestParam(value = "password") String password,
 						HttpSession session, RedirectAttributes flash) {
-		
 		Usuario usuarioEncontrado = servicioUsuario.selectFromUsuariosWhereNombreUsuarioAndPassword(nombreUsuario, password);
 		if (usuarioEncontrado == null) {
 			if (nombreUsuario.equals("")) {
@@ -106,5 +108,26 @@ public class ControladorUsuario {
 		session.removeAttribute("identificador");
 		session.removeAttribute("nombreUsuario");
 		return "redirect:/usuarios/login";
+	}
+
+	@RequestMapping(value = "/editar", method = RequestMethod.GET)
+	// En este método no necesitamos @ModelAttribute, pero se incluye debido a que renderizamos un JSP que está asociado con un ModelAttribute
+	public String despliegaEditar(@ModelAttribute("usuario") Usuario editarUsuario) {
+		return "editarusuario.jsp";
+	}
+
+	@RequestMapping(value = "/editar", method = RequestMethod.PUT)
+	public String editarUsuario(@Valid @ModelAttribute("usuario") Usuario editarUsuario, BindingResult result, HttpSession session) {
+		if (result.hasErrors()) {
+			// no se redirecciona, a pesar de que se trata de un POST, tenemos que enviar nuevamente el formulario para que se muestre el error de la validación
+			return "editarusuario.jsp";
+		} else {
+			session.setAttribute("nombre", editarUsuario.getNombre());
+			session.setAttribute("apellido", editarUsuario.getApellido());
+			session.setAttribute("identificador", editarUsuario.getIdentificador());
+			session.setAttribute("nombreUsuario", editarUsuario.getNombreUsuario());
+			servicioUsuario.updateUsuario(editarUsuario);
+			return "redirect:/usuarios";
+		}
 	}
 }

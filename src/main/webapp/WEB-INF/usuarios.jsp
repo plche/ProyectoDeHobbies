@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
@@ -14,9 +14,18 @@
 				<li>
 					<form action="/usuarios/eliminar/${usuario.getNombreUsuario()}" method="post">
 						<c:out value="${usuario.getNombre()}" /> <c:out value="${usuario.getApellido()}" />
+<%--						El valor de la variable nombreUsuario viene de la sesión--%>
+						<c:if test="${usuario.getNombreUsuario() eq nombreUsuario}">
+							<a href="/usuarios/editar"><button type="button">Editar</button></a>
+						</c:if>
 						<input type="hidden" name="_method" value="DELETE" />
 						<button type="submit">Eliminar</button>
 					</form>
+					<ul>
+						<c:forEach var="hobby" items="${usuario.getListaHobbies()}">
+							<li><c:out value="${hobby.getNombre()}" /></li>
+						</c:forEach>
+					</ul>
 				</li>
 			</c:forEach>
 		</ul>

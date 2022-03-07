@@ -1,12 +1,16 @@
 package com.codingdojo.peru.full_time_2022.proyecto_de_hobbies.modelos;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 //import javax.persistence.GeneratedValue;
 //import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 // La siguiente anotación indica que estamos creando una clase que representa una entidad (una tabla en SQL - bases de datos relacionales).
 @Entity
@@ -23,9 +27,11 @@ public class Usuario {
 	
 	// La siguiente anotación señala que el campo no podrá ser nulo.
 	@NotNull
+	@NotEmpty
 	private String nombre;
 	
 	@NotNull
+	@NotEmpty
 	private String apellido;
 	
 	@NotNull
@@ -35,9 +41,12 @@ public class Usuario {
 	@Size(min=4, max=30, message = "El password debe de tener entre 4 y 30 caracteres")
 	private String password;
 
-	
+	// La anotación @OneToMany, permite crear una relación 1 a n. mappedBy, indica el campo que relaciona en Hobby.
+	// FetchType.LAZY, indica que se obtendrán los datos en cuanto se accedan a ellos.
+	@OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+	private List<Hobby> listaHobbies;
+
 	public Usuario() {
-		super();
 	}
 
 	public Usuario(String nombreUsuario, String nombre, String apellido, long identificador, String password) {
@@ -86,5 +95,13 @@ public class Usuario {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public List<Hobby> getListaHobbies() {
+		return listaHobbies;
+	}
+
+	public void setListaHobbies(List<Hobby> listaHobbies) {
+		this.listaHobbies = listaHobbies;
 	}
 }
